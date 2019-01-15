@@ -1,0 +1,83 @@
+*&---------------------------------------------------------------------*
+*& Report ZCONTEXTMENU_0321
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZCONTEXTMENU_0321.
+
+* Table declaration
+DATA: I_SPFLI TYPE STANDARD TABLE OF SPFLI INITIAL SIZE 0,
+      I_SFLIGHT TYPE STANDARD TABLE OF SFLIGHT INITIAL SIZE 0.
+* Workarea declaration
+DATA: W_SPFLI TYPE SPFLI,
+      W_SFLIGHT TYPE SFLIGHT.
+
+START-OF-SELECTION.
+* Set custom status
+  SET PF-STATUS 'BASIC'.
+* Fetch header data
+  SELECT *
+    FROM SPFLI
+  INTO TABLE I_SPFLI
+  UP TO 50 ROWS.
+  IF SY-SUBRC = 0.
+*   Fetch line item data
+    SELECT *
+      FROM SFLIGHT
+    INTO TABLE I_SFLIGHT
+    FOR ALL ENTRIES IN I_SPFLI
+    WHERE CONNID = I_SPFLI-CONNID.
+    CHECK SY-SUBRC = 0.
+*   Display basic list
+    LOOP AT I_SPFLI INTO W_SPFLI.
+      FORMAT COLOR COL_HEADING.
+      WRITE : /10 W_SPFLI-CARRID,
+               20 W_SPFLI-CONNID,
+               35 W_SPFLI-COUNTRYFR,
+               55 W_SPFLI-CITYFROM.
+      HIDE: W_SPFLI-CARRID.
+    ENDLOOP.
+  ENDIF.
+
+
+AT USER-COMMAND.
+* Handle user command
+  CASE SY-UCOMM.
+    WHEN 'DETAIL'.
+      CHECK NOT W_SPFLI IS INITIAL.
+*     Display detail list
+      LOOP AT I_SFLIGHT INTO W_SFLIGHT WHERE CARRID =
+                                  W_SPFLI-CARRID.
+        FORMAT COLOR COL_HEADING.
+        WRITE : /10 W_SFLIGHT-CARRID,
+                 25 W_SFLIGHT-CONNID,
+                 35 W_SFLIGHT-FLDATE,
+                 55 W_SFLIGHT-PRICE.
+      ENDLOOP.
+      WINDOW STARTING AT 20 20
+         ENDING  AT 120 110.
+  ENDCASE.
+*&---------------------------------------------------------------*
+*&      Form  on_ctmenu_request
+*&---------------------------------------------------------------*
+*       Creation of custom context menu- It is called dynamically
+*       by ABAP runtime
+*----------------------------------------------------------------*
+*      -->L_MENU     Handle for context menu
+*----------------------------------------------------------------*
+FORM ON_CTMENU_REQUEST USING L_MENU TYPE REF TO CL_CTMENU.
+  DATA LIN TYPE I.
+  GET CURSOR LINE LIN.
+  IF LIN > 2 AND SY-LSIND = 0.
+*   Add menu
+    CALL METHOD L_MENU->ADD_FUNCTION
+      EXPORTING
+        FCODE = 'DETAIL'
+        TEXT  = TEXT-001.
+  ENDIF.
+*   Add menu
+  CALL METHOD L_MENU->ADD_FUNCTION
+    EXPORTING
+      FCODE = 'BACK'
+      TEXT  = TEXT-002.
+ENDFORM.                    "on_ctmenu_request
