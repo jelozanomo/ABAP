@@ -1,0 +1,36 @@
+*&---------------------------------------------------------------------*
+*& Report ZSETCURSOR_03_1
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZSETCURSOR_03_1.
+
+DATA: FIELD1(14) TYPE C,
+      FLIED2(14) TYPE C,
+      FLIED3(13) TYPE C,
+      NAME(10) TYPE C.
+
+SELECTION-SCREEN BEGIN OF BLOCK bloc WITH FRAME.
+  PARAMETERS: DEF RADIOBUTTON GROUP RAD,
+              TXT RADIOBUTTON GROUP RAD,
+              F1 RADIOBUTTON GROUP RAD,
+              F2 RADIOBUTTON GROUP RAD,
+              F3 RADIOBUTTON GROUP RAD.
+SELECTION-SCREEN END OF BLOCK BLOC.
+
+PARAMETERS POS TYPE I.
+IF TXT = 'X'.
+  NAME = 'TEXT'.
+ELSEIF F1 = 'X'.
+  NAME = 'FIELD1'.
+ELSEIF F2 = 'X'.
+  NAME = 'FIELD3'.
+ENDIF.
+
+CALL SCREEN 100.
+MODULE CURSOR OUTPUT.
+  IF DEF NE 'X'.
+    SET CURSOR FIELD NAME OFFSET POS.
+  ENDIF.
+   SET PF-STATUS 'SCREEN_100'.
+ENDMODULE.
