@@ -1,0 +1,38 @@
+*&---------------------------------------------------------------------*
+*& Report ZMODIFYSCREERTBTN
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZMODIFYSCREERTBTN.
+* CREAMOS UN BLOQUE  EN LA PANTALLA DE SELECCIÓN
+SELECTION-SCREEN BEGIN OF BLOCK BLQ1 WITH FRAME TITLE TEXT-T01. "Block con titulo
+  PARAMETERS: P_RADBT1 RADIOBUTTON GROUP BT1 USER-COMMAND uc,
+              P_RADBT2 RADIOBUTTON GROUP BT1.
+
+SELECTION-SCREEN BEGIN OF BLOCK BLQ4 WITH FRAME TITLE Text-t02.
+  PARAMETERS: P_RADBT3 RADIOBUTTON GROUP BT2 MODIF ID GR1,
+              P_RADBT4 RADIOBUTTON GROUP BT2 MODIF ID GR1,
+              P_RADBT5 RADIOBUTTON GROUP BT2 MODIF ID GR1.
+SELECTION-SCREEN END OF BLOCK BLQ4.
+ PARAMETERS: p_radbt6 RADIOBUTTON GROUP bt1,
+                p_radbt7 RADIOBUTTON GROUP bt1.
+SELECTION-SCREEN END OF BLOCK BLQ1.
+*Fin creacion de parametros de radiobuttons  y sus grupos de modificacion  que se deben tener en cuenta con el modify screen.
+
+*Evento at selecction screen output .
+AT SELECTION-SCREEN OUTPUT.
+   IF p_radbt2 IS INITIAL.
+    LOOP AT SCREEN.
+      IF screen-group1 EQ 'GR1'.
+        screen-active = 0.
+        MODIFY screen.
+      ENDIF.
+    ENDLOOP.
+  ELSE.
+    LOOP AT SCREEN.
+      IF screen-group1 EQ 'GR1'.
+        screen-active = 1.
+        MODIFY screen.
+      ENDIF.
+    ENDLOOP.
+  ENDIF.
