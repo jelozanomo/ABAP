@@ -1,0 +1,63 @@
+*&---------------------------------------------------------------------*
+*& Report ZSCREEN_03_1
+*&---------------------------------------------------------------------*
+*& se crean 4 dynpros 110, 120, 130, 140.
+*&---------------------------------------------------------------------*
+REPORT ZSCREEN_03_1.
+
+PARAMETERS: CARRID TYPE SCARR-CARRID.
+
+
+IF CARRID EQ 'AC'.
+  CALL SCREEN 110.
+
+ENDIF.
+*&---------------------------------------------------------------------*
+*& Module STATUS_0110 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE STATUS_0110 OUTPUT.
+ SET PF-STATUS 'STATUS_0110'.
+* SET TITLEBAR 'xxx'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0110  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE USER_COMMAND_0110 INPUT.
+ CASE SY-UCOMM.
+   WHEN 'BACK'.
+     SET SCREEN 0.
+   WHEN 'UP'.
+     LEAVE TO SCREEN 0.
+   WHEN 'LTS'.
+     LEAVE TO SCREEN 120.
+ ENDCASE.
+
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0120  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE USER_COMMAND_0120 INPUT.
+
+   CASE SY-UCOMM.
+   WHEN 'STS0'.
+     SET SCREEN 0.
+   WHEN 'LS1'.
+     LEAVE TO SCREEN 110.
+    WHEN 'LTS0'.
+     LEAVE TO SCREEN 0.
+   WHEN 'LS'.
+     LEAVE SCREEN.
+   WHEN 'SS130'.
+     SET SCREEN 130.
+   WHEN 'SSLV'.
+     SET SCREEN 140.
+     LEAVE SCREEN.
+ ENDCASE.
+
+ENDMODULE.
