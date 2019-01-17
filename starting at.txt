@@ -1,0 +1,66 @@
+"Declaración de Variables
+TABLES SSCRFIELDS.          "Tabla
+DATA: LV_FLAG TYPE CHAR1.   "Variables
+"Declaración de Pantalla de Selección
+SELECTION-SCREEN:
+
+  BEGIN OF SCREEN 2000 AS WINDOW TITLE TIT,
+    BEGIN OF LINE,
+      PUSHBUTTON 3(17) BUT1 USER-COMMAND CLI1,
+      COMMENT   25(15) COM1,
+    END OF LINE,
+
+    BEGIN OF LINE,
+      PUSHBUTTON 3(17) BUT2 USER-COMMAND CLI2,
+      COMMENT   25(15) COM2,
+    END OF LINE,
+
+    BEGIN OF LINE,
+      PUSHBUTTON 3(17) BUT3 USER-COMMAND CLI3,
+      COMMENT   25(15) COM3,
+    END OF LINE,
+
+    BEGIN OF LINE,
+      PUSHBUTTON 3(17) BUT4 USER-COMMAND CLI4,
+      COMMENT   25(15) COM4,
+    END OF LINE,
+
+  END OF SCREEN 2000.
+"Procesos al Seleccionar
+AT SELECTION-SCREEN.
+  CASE SSCRFIELDS.
+    WHEN 'CLI1'.
+      LV_FLAG = '1'.
+    WHEN 'CLI2'.
+      LV_FLAG = '2'.
+    WHEN 'CLI3'.
+      LV_FLAG = '3'.
+    WHEN 'CLI4'.
+      LV_FLAG = '4'.
+  ENDCASE.
+START-OF-SELECTION.
+  "Declaración de Textos de Pantalla
+  TIT  = 'Pantalla emergente con botones'.
+  BUT1 = 'Botón 1'.
+  BUT2 = 'Botón 2'.
+  BUT3 = 'Botón 3'.
+  BUT4 = 'Botón 4'.
+  COM1 = 'Comentario 1'.
+  COM2 = 'Comentario 2'.
+  COM3 = 'Comentario 3'.
+  COM4 = 'Comentario 4'.
+  "Llamado a Pantalla de Selección
+  CALL SELECTION-SCREEN 2000 STARTING AT 4 2.
+  "Validamos acción en pantallas de selección
+  CASE LV_FLAG.
+    WHEN '1'.
+      WRITE / 'Botón 1 Presionado'.
+    WHEN '2'.
+      WRITE / 'Botón 2 Presionado'.
+    WHEN '3'.
+      WRITE / 'Botón 3 Presionado'.
+    WHEN '4'.
+      WRITE / 'Botón 4 Presionado'.
+    WHEN OTHERS.
+      WRITE / 'Ningún botón ha sido presionado'.
+  ENDCASE.
