@@ -1,0 +1,37 @@
+sap.ui.require([
+// 	"sap/m/Text",
+	"sap/ui/model/json/JSONModel",
+	"sap/ui/core/mvc/XMLView"
+], function (JSONModel, XMLView) {
+	"use strict";
+
+	// Attach an anonymous function to the SAPUI5 'init' event
+	sap.ui.getCore().attachInit(function () {
+	    //Crear un jSON model desde un objeto literal greetingText:"hola mi nombre es Jhon Montengro"
+	    //Cree un nuevo modelo JSON pasando los datos como objeto literal y 
+	    //almacene la instancia del modelo resultante en una variable local llamada oModel
+	    var oModel = new JSONModel({
+	        firstName:"Shon",
+	        lastName:"lozano",
+	        enable:true,
+	        panelHeaderText:"Data bindig Basico"
+	        
+	    });
+	    //Asignar el modelo objeto a sapui5 Core
+	    //Configure oModel para que sea el modelo predeterminado en tdo el núcleo SAPUI5.
+	    //Esto hace que el objeto modelo esté disponible globalmente para todos los controles utilizados dentro de la aplicación.
+	    //En este caso, hemos vinculado el objeto modelo al núcleo SAPUI5
+	    sap.ui.getCore().setModel(oModel);
+	    
+	    
+	    //mostrando el elemento texto cuyo texto es derivado 
+	    //
+	    
+		// Create a text UI element that displays a hardcoded text string
+		//new Text({text:"{/greetingText}"}).placeAt("content");
+		//Mostrar el Xml view llamada "App"
+		new XMLView({
+		    viewName: "databindigs.view.App"
+		}).placeAt("content");
+	});
+});
