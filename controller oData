@@ -1,0 +1,247 @@
+sap.ui.define([
+	"sap/ui/core/mvc/Controller",
+	"sap/m/MessageToast",
+	"sap/m/MessageBox",
+	"sap/ui/model/Sorter",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator",
+	"sap/ui/model/FilterType",
+	"sap/ui/model/json/JSONModel"
+], function (Controller, MessageToast, MessageBox, Sorter, Filter, FilterOperator, FilterType, JSONModel) {
+	"use strict";
+
+	return Controller.extend("sap.ui.core.tutorial.odatav4.controller.App", {
+
+		/**
+		 *  Hook for initializing the controller
+		 */
+		onInit : function () {
+		    //getMessageManager() Devuelve la instancia activa de MessageManager.
+		       var oMessageManager = sap.ui.getCore().getMessageManager(), 
+		       /* oMessageManager = I {addMessages: ƒ, 
+		                           destroy: ƒ, 
+		                           getMessageModel: ƒ, 
+		                           registerMessageProcessor: ƒ, 
+		                           registerObject: ƒ, …}*/
+		        //trae Get the MessageModel de oMessageManager
+		        
+		        oMessageModel = oMessageManager.getMessageModel(),
+		        /*oMessageModel = constructor { aBindings: (2) [f, f]
+                                                aPendingRequestHandles: []
+                                                bCache: true
+                                                bDestroyed: false
+                                                bLegacySyntax: false
+                                                iSizeLimit: 100
+                                                id: "id-1549996006843-11"
+                                                mContexts: {}
+                                                mEventRegistry: {messageChange: Array(1)}
+                                                mMessages: null
+                                                mSupportedBindingModes: {OneWay: true, TwoWay: false, OneTime: false}
+                                                mUnsupportedFilterOperators: {Any: true, All: true}
+                                                oData: []
+                                                oMessageManager: constructor {mEventRegistry: {…}, mProcessors: {…}, mObjects: {…}, mMessages: {…}, getInterface: ƒ, …}
+                                                sDefaultBindingMode: "OneWay"
+                                                sUpdateTimer: null
+                                                __proto__: constructor*/
+               oMessageModelBinding = oMessageModel.                                 
+		      //Crea un nuevo enlace de lista para la ruta sPath = "/" y un contexto oContext = undefined que 
+		      //debe resolverse en una ruta de OData absoluta para un conjunto de entidades.
+		      //bindList(sPath, oContext?, aSorters?, aFilters?, mParameters?)
+		      //bindList(sPath = "/",oContext = undefined,aSorters=  [0],mParameters = undefined)
+		        bindList("/", undefined, [],new Filter("technical", FilterOperator.EQ, true)),
+		        //crea un modelo 
+		        oViewModel = new JSONModel({
+		            busy: false,
+		            hasUIChanges: false,
+		            usernameEmpty: true,
+		            order: 0
+		        });
+		        //adapta el modelo al controler
+		        this.getView().setModel(oViewModel, "appView");
+		        
+		        this.getView().setModel(oMessageModel,"message");
+		        //attachChange(fnFunction, oListener?)
+		        //Adjunte el controlador de eventos fnFunction al evento 'change' de este sap.ui.model.Model.
+		        oMessageModelBinding.attachChange(this.onMessageBindingChange, this);
+		        this._bTechnicalErrors = false; // If there were technical errors, a new save resets them.
+
+		},
+		
+	onCreate : function () {
+			var oList = this.byId("peopleList"),
+			 //getBinding() Obtener el objeto de enlace para una agregación / propiedad específica
+			 //obtiene una nueva "UserName" : "", "FirstName" : "",	"LastName" : "", "Age" : "18"
+				oBinding = oList.getBinding("items"),
+				// Create a new entry through the table's list binding
+				oContext = oBinding.create({
+					"UserName" : "",
+					"FirstName" : "",
+					"LastName" : "",
+					"Age" : "18"
+				});
+            //Active una solicitud POST para el servicio de odata que se especificó 
+            //en el constructor del modelo. Tenga en cuenta que las creaciones en 
+            //profundidad no son compatibles y pueden no funcionar.
+			oContext.created().then(function () {
+				oBinding.refresh();
+			});
+
+			this._setUIChanges(true);
+			this.getView().getModel("appView").setProperty("/usernameEmpty", true);
+
+			// Select and focus the table row that contains the newly created entry
+			oList.getItems().some(function (oItem) {
+				if (oItem.getBindingContext() === oContext) {
+					oItem.focus();
+					oItem.setSelected(true);
+					return true;
+				}
+			});
+		},
+		
+		onInput: function(oEvt){
+		    if(oEvt.getParameter("escPressed")){
+		        this._setUIChange();
+		    }else{
+		        this._setUIChanges(true);
+		        if(oEvt.getSource().getParent().getBindingContext().getProperty("UserName")) {
+		            this.getView().getModel("appView").setProperty("/usernameEmpty", false);
+		        }
+		    } 
+		},
+		
+		/* =========================================================== */
+		/*           begin: event handlers                             */
+		/* =========================================================== */
+
+
+		/**
+		 * Refresh the data.
+		 */
+		onRefresh : function () {
+			var oBinding = this.byId("peopleList").getBinding("items");
+
+			if (oBinding.hasPendingChanges()) {
+				MessageBox.error(this._getText("refreshNotPossibleMessage"));
+				return;
+			}
+			oBinding.refresh();
+			MessageToast.show(this._getText("refreshSuccessMessage"));
+		},
+		
+		onResetChanges: function(){
+		    this.byId("peopleList").getBinding("items").resetChanges();
+		    this._bTechnicalErrors = false;
+		    this._setUIChange();
+		},
+		// en el que se llama el metodo submitBach de la API oDATAModel
+		onSave: function(){
+		    //promesa
+		    var fnSucces = function(){
+		        
+		        this.setBusy(false);
+		        MessageToast.show(this._getText("changesSentMessage"));
+		        this._setUIChanges(false);
+		    }.bind(this);
+		    
+		    var fnError = function(oError){
+		        this._setBusy(false);
+		        this._setUIChanges(false);
+		        MessageToast.show(oError.message);
+		    }.bind(this);
+		    
+		    this.setBusy(false);
+		    //submitBatch(fnSuccess?, fnError?, bAsync?, bImportData)
+		    this.getView().getModel().submitBath("peopleGroup").then(fnSucces, fnError);
+		    this.bTechnicalErrors =  false; 
+		},
+		
+		onSearh: function(){
+		    var oView = this.getView(),
+		        sValue = oView.byId("searchField").getValue(),
+		        oFilter = new Filter("LastName", FilterOperator.Contains, sValue);
+		        //Obtener el objeto de enlace para una agregación/  propiedad específica
+		  oView.byId("peopleList").getBindig("items").filter(oFilter.FilterType.Application);
+		},  
+		
+		onSort: function(){
+		     var oView = this.getView(),
+		        aState = [undefined, "asc", "desc"],
+		            
+		        aStateTextIds = ["sortNone", "sortAscendig", "sortDescending"],
+		        sMessage,
+		        iOrder = oView.getModel("appView").getProperty("/order");
+		        
+		        iOrder = (iOrder + 1)% aState.length;
+		        
+		        var sOrder = aState[iOrder];
+		        
+		        oView.getModel("appView").setProperty("/oder", iOrder);
+		        oView.byId("peopleList").getBinding("items").sort(sOrder && new Sorter("LastName", sOrder === "desc"));
+		        
+		        sMessage = this._getText("SortMessage", [this._getText(aStateTextIds[iOrder])]);
+		        MessageToast.show(sMessage);
+		        
+		        
+		        
+		},
+		onMessageBindingChange: function(oEvent){
+		    var aContexts =  oEvent.getSource().getContext(),
+		        aMessages,
+		        bMessageOpen = false;
+		        
+		        if(bMessageOpen || !aContexts.length){
+		            return;
+		        }
+		        // Extract and remove the technical messages
+		        aMessages = aContexts.map(function (oContext) {
+				return oContext.getObject();
+			});
+		        
+		        sap.ui.getCore().getMessageManager().removeMessages(aMessages);
+		        
+		        this._setUIChange(true);
+		        this._bTechnicalErrors = true;
+		        MessageBox.error(aMessages[0].message,{
+		            id: "serviceErrorMessageBox",
+		            onClose: function(){
+		                bMessageOpen =  false;
+		            }
+		        });
+		        bMessageOpen =  true;
+		    
+		},
+
+		/* =========================================================== */
+		/*           end: event handlers                               */
+		/* =========================================================== */
+		/**
+		 * Convenience method for retrieving a translatable text.
+		 * @param {string} sTextId - the ID of the text to be retrieved.
+		 * @param {Array} [aArgs] - optional array of texts for placeholders.
+		 * @returns {string} the text belonging to the given ID.
+		 */
+		_getText : function (sTextId, aArgs) {
+			return this.getOwnerComponent().getModel("i18n").getResourceBundle().getText(sTextId, aArgs);
+		},
+		
+ 		/*metodo privado */
+		_setUIChanges : function(bHasUIChanges){
+		    if(this._bTechnicalErrors){
+		        bHasUIChanges = true;
+		    }else if(bHasUIChanges === undefined) {
+		        //hasPendingChanges() Comprueba si existen cambios pendientes en el modelo creado por el métodmo setProperty.
+		        bHasUIChanges = this.getView().getModel().hasPendingChanges();
+		        
+		    }
+		    var oModel = this.getView().getModel("appView");
+		    oModel.setProperty("/hasUIChanges", bHasUIChanges);
+		}, 
+		
+		//para bloquear toda la IU mientras los datos se envían al back-end.
+		_setBusy: function(bIsBusy) {
+		    var oModel = this.getView().getModel("appView");
+		    oModel.setProperty("/busy", bIsBusy);
+		}
+	});
+});som
