@@ -10,3 +10,5 @@ reemplazarlo por el valor de otro campo, la opción “Asignación campo-campo�
 
 Las sustituciones las podriamos definir como reglas de reemplazo de valores que se 
 completan cuando se cumplen determinadas condiciones.
+
+https://help.sap.com/doc/saphelp_470/4.7/es-ES/5b/d231a843c611d182b30000e829fbfe/frameset.htm
