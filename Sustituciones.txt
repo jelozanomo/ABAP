@@ -1,0 +1,12 @@
+
+Sustituciones en Controlling(CO), Finanzas (FI) , Proyectos(PS).
+
+
+Tipos de sustituciones 
+
+En nuestro caso como vamos a generar algo de código, usaremos un EXIT. 
+En caso de querer reeemplazarlo por una constante usar “Valor constante” 
+reemplazarlo por el valor de otro campo, la opción “Asignación campo-campo”
+
+Las sustituciones las podriamos definir como reglas de reemplazo de valores que se 
+completan cuando se cumplen determinadas condiciones.
